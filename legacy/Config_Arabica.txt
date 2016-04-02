@@ -1,0 +1,86 @@
+################################################################################
+#
+# FILE: Config_Arabica.txt - Copyright 2007 Aris Xanthos
+#
+# This file is part of Arabica 1.0
+#
+# Arabica 1.0 is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#
+#-------------------------------------------------------------------------------
+#
+# SYNOPSIS: This file contains the parameters for configuring Arabica.pl.
+#           The format of each line is:
+# 
+#             NameOfParameter = ValueOfParameter
+#
+#           The symbol '#' at the beginning of a line indicates comments.
+#
+################################################################################
+
+
+#-------------------------------------------------------------------------------
+# Input file name:
+
+InputFileName = ../data/corpus.txt
+
+
+#-------------------------------------------------------------------------------
+# Output file name (put a # before this line to output to console):
+
+OutputFileName = analysis.txt
+
+
+#-------------------------------------------------------------------------------
+# Sampling rate (must be > 0 and <= 1):
+
+SamplingRate = 1
+
+
+#-------------------------------------------------------------------------------
+# The symbol to be used for denoting insertion slots:
+
+InsertionSlotSymbol = -
+
+
+#-------------------------------------------------------------------------------
+# Select phoneme category used for building patterns (either 'consonants' or
+# 'vowels'):
+
+PhonemeCategoryInPatterns = vowels
+
+
+#-------------------------------------------------------------------------------
+# Minimum number of phonemes per root and pattern (excl. 'slots'):
+
+MinimumNumberOfPhonemesPerRoot = 2
+MinimumNumberOfPhonemesPerPattern = 1
+
+
+#-------------------------------------------------------------------------------
+# Minimum number of roots and patterns per RP structure:
+
+MinimumNumberOfRoots = 2
+MinimumNumberOfPatterns = 2
+
+
+#-------------------------------------------------------------------------------
+# Extend known RP structures:
+
+ExtendKnownRPStructures = true
+
+
+#-------------------------------------------------------------------------------
+# END OF FILE
+#-------------------------------------------------------------------------------

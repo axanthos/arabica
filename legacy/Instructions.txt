@@ -1,0 +1,424 @@
+
+I. English (version française ci-dessous)
+=========================================
+
+
+1. Overview
+-----------
+
+Arabica is a software for the unsupervised learning of root-and-pattern 
+morphology. It takes as input a text file with one word per line (in phonemic
+or orthographic transcription, typically). It attempts to decompose each word
+into a ROOT and a PATTERN, and to identify the rules that govern their
+combinations.
+
+To do this, Arabica first applies the algorithm described by Sukhotin (1962, 
+1973) to identify consonants and vowels based only on their distribution. Then 
+it assumes that the sequence of consonants of each word is a root, and that the 
+sequence of vowels is a pattern. Based on this first analysis, it looks for
+regular combinations of roots and patterns, i.e. sets of roots that can combine
+with sets of patterns. When it finds such a combination, Arabica creates an
+RP STRUCTURE, which can be conceived as a rule that says "roots r1, r2, r3, ...
+combine with patterns p1, p2, p3...".
+
+At this point, words that do not enter a valid RP structure are treated as
+unanalyzed; in particular, their hypothetical roots and patterns are deleted.
+In a second stage, Arabica tries to extend the set of roots and patterns it
+knows by finding sets of unanalyzed words that correspond to an RP structure
+that was found previously. Such sets of words are integrated to an existing
+structure under the condition that this integration results in an overall
+simplification of the morphology; this is evaluated on the basis of a minimum 
+description length (MDL) analysis (see Rissanen 1989, Goldsmith 2001, 
+Xanthos 2007 for details).
+
+The output of the program is a file describing the roots, patterns and
+RP structures it has discovered.
+
+
+
+2. Input
+--------
+
+Arabica takes as input text file with one word per line, in phonemic or 
+orthographic transcription (see file corpus.txt), typically. Other delimiters 
+than carriage returns are treated as normal symbols, just like alphanumeric 
+characters.
+
+
+
+3. Running Arabica
+------------------
+
+Arabica is a Perl script. It requires the Perl interpreter to be installed on
+the computer. A free distribution of Perl can be downloaded from the address
+http://www.activestate.com.
+
+The file Arabica.pl must be in the same folder as the file Config_Arabica.txt,
+which contains the parameters that control the program (see 5 below). It can
+be executed either by typing 'perl arabica.pl' in the Command Prompt window, 
+or by (double-)clicking on its icon if the operating system allows it.
+
+Please note that the execution can be VERY lengthy if the input file is long.
+The user is advised to experiment with a low value of the SamplingRate 
+parameter first (see 5 c. below) for files longer than a few thousand words.
+
+ 
+
+4. Output
+---------
+
+The output of the program is a file summarizing the morphology that was learnt.
+It is divided into 6 sections. Note that this file is tab-delimited, so that it
+is easier to read and process when opened in a spreadsheet.
+
+a. DESCRIPTION LENGTH ANALYSIS:
+
+   This section reports the calculation of the description length of the 
+   morphology. See Xanthos (2007) for details on the interpretation of these 
+   results.
+
+b. WORDS:
+
+   This section gives the list of distinct words in the corpus, along with 
+   their token frequency, the index of their RP structure (see f. below), and
+   their description length (in bits). 
+
+c. CONSONANTS AND VOWELS:
+
+   This section displays the 'C' and 'V' categories that were identified by 
+   Sukhotin's algorithm.
+
+d. ROOTS:
+
+   This section contains the list of roots identified by the program, including
+   unanalyzed words (these are treated as roots that combine with a NULL 
+   pattern). For each root, it reports its token frequency, the associated RP 
+   structure, the root's description length, and if it isn't an unanalyzed 
+   word, the code corresponding to the heuristic that discovered it (either BS 
+   for the 1st, "bootstrapping" phase or EXT for the 2nd, "extension" phase.) 
+
+e. PATTERNS:
+
+   This section contains the list of patterns with their token frequency, 
+   associated RP structure(s), and description length.
+
+f. RP STRUCTURES:
+
+   This section enumerates the RP structures that were learnt. For each 
+   RP structure, it reports:
+     - its index (as used in sections b., d., and e.);
+     - its token count;
+     - its robustness, i.e. the number of symbols that are saved by writing 
+       down this structure instead of the words it generates, see details in 
+       Xanthos (2007);
+     - the total description length of the roots it contains (the value between
+       brackets is the cost of the list of roots itself -- regardless of the
+       specific roots in it);
+     - the total description length of the patterns it contains;
+     - the set of roots it contains, with their token frequency and description
+       length;
+     - the set of patterns it contains, with their token frequency and 
+       description length.
+
+NB: The indications given in the heading of sections b., d., e., and f. concern 
+each list (words, roots, patterns and RP structures) as a whole. They give the 
+number of types and tokens in the list, and its overall description length. 
+
+
+
+5. Parameters
+-------------
+
+The file Config_Arabica.txt contains the parameters that control Arabica. The
+format of each line in this file is:
+ 
+             NameOfParameter = ValueOfParameter
+
+with the exception of comments, i.e. lines that begin with the symbol '#',
+and are ignored by the program.
+
+The parameters are:
+
+a. InputFileName: 
+
+   The name of the input file, including its extension, e.g. 'corpus.txt'.
+
+b. OutputFileName: 
+
+   The name of the output file (incl. extension), e.g. 'analysis.txt'. If this
+   parameter is omitted, the output is sent to the console.
+
+c. SamplingRate: 
+
+   The proportion of words to be randomly sampled. The default value of 1 
+   means all the words, while 0.5 means about 50% of words, for example.
+
+d. InsertionSlotSymbol: 
+   
+   The symbol to be used for denoting insertion slots in patterns (default is 
+   dash '-'). The selected symbol cannot occur in the input file. 
+
+e. PhonemeCategoryInPatterns:
+
+   The phoneme category used to construct patterns, either 'vowels' (default)
+   or 'consonants' (Sukhotin's algorithm labels as vowels the phoneme category
+   that contains the most frequent symbol).
+
+f. MinimumNumberOfPhonemesPerRoot and 
+   MinimumNumberOfPhonemesPerPattern:
+
+   The number of phonemes below which a root or a pattern is automatically
+   rejected. Default is 2 for roots and 1 for patterns.
+
+g. MinimumNumberOfRoots and
+   MinimumNumberOfPatterns:
+
+   The number of roots and patterns required for an RP structure to be created.
+   Default is 2 and 2.
+
+h. ExtendKnownRPStructures:
+
+   A switch for performing ('true') or bypassing ('false') the second learning
+   phase, where Arabica tries to extend the coverage of the initial morphology.
+   Default is 'true'.
+
+
+
+6. Contact info
+---------------
+
+Please address questions or bug reports to aris.xanthos@unil.ch. Arabica.pl is
+free software distributed under the GNU general public license (see file 
+License.txt). The complete distribution, along with information regarding the
+program, can be found at these two addresses: http://www.unil.ch/imm or
+http://linguistica.uchicago.edu.
+
+
+
+II. Français
+============
+
+
+1. Vue d'ensemble
+-----------------
+
+Arabica est un logiciel pour l'apprentissage non-supervisé de la morphologie
+introflexionnelle. Il prend en entrée un fichier texte avec un mot par ligne
+(en transcription phonémique ou orthographique, typiquement). Il s'efforce de
+décomposer chaque mot en une RACINE et un SCHEME, et d'identifier les règles 
+qui gouvernent leurs combinaisons.
+
+Pour ce faire, Arabica applique d'abord l'algorithme décrit par Sukhotin (1962,
+1973) pour l'identification des consonnes et voyelles sur la seule base de leur 
+distribution. Puis il fait l'hypothèse que la séquence de consonnes contenue
+dans chaque mot est une racine, et la séquence de voyelles un schème. Sur la
+base de cette première analyse, il cherche des combinaisons régulières de
+racines et de schèmes, i.e. des ensembles de racines se combinant avec des 
+ensembles de schèmes. Lorsqu'il trouve une telle combinaison, Arabica crée une
+STRUCTURE RS, qui peut être conçue comme une règle énonçant que "les racines
+r1, r2, r3, ... se combinent avec les schèmes s1, s2, s3, ...".
+
+A ce point de l'apprentissage, les mots qui ne sont pas associés à une 
+structure RS régulière sont traités comme inanalysés; en particulier, les
+racines et schèmes correspondant sont effacés. Dans une deuxième phase, Arabica
+tente d'élargir l'ensemble de racines et de schèmes qu'il connaît en trouvant
+des ensembles de mots inanalysés correspondant à une structure découverte au
+préalable. De tels ensembles de mots sont alors ajoutés à la structure 
+existante à la condition que cet ajout aboutisse à une simplification de la
+morphologie; cette évaluation est basée sur le principe de la longueur de
+description minimale (angl. minimum description length ou MDL) (voir Rissanen
+1989, Goldsmith 2001, Xanthos 2007 pour plus de détails).
+
+Le résultat de l'exécution du programme est un fichier décrivant les racines,
+schèmes et structures RS découvertes.
+
+
+
+2. Input
+--------
+
+Arabica prend en entrée un fichier texte avec un mot par ligne, typiquement
+en transcription phonémique ou orthographique. A l'exception du retour à la 
+ligne, les séparateurs sont traités de la même façon que les caractères 
+alphanumériques normaux.
+
+
+
+3. Exécution d'Arabica
+----------------------
+
+Arabica est un script Perl. Son exécution nécessite que l'interpréteur Perl
+soit installé sur la machine utilisée. Perl peut être téléchargé gratuitement
+sur le site http://www.activestate.com.
+
+Le fichier Arabica.pl doit être placé dans le même dossier que le fichier 
+Config_Arabica.txt, qui contient les paramètres qui contrôlent le programme
+(voir 5. ci-dessous). Arabica peut être exécuté en tapant 'perl arabica.pl' 
+à l'invite de commande, ou en (double-)cliquant sur l'icône du script si le 
+système d'exploitation le permet.
+
+Veuillez noter que l'exécution du programme peut être TRES longue si le fichier
+d'entrée est grand. Il est recommandé de faire un test avec une valeur faible 
+du paramètre SamplingRate (voir 5 c. ci-dessous) si le fichier d'entrée 
+contient plus de quelques milliers de mots. 
+
+ 
+
+4. Résultat
+-----------
+
+Le résultat du programme est un fichier résumant la morphologie apprise. Ce
+fichier est divisé en 6 sections; il est délimité par des tabulations, si bien
+qu'il peut être plus aisément visualisé et traité à l'aide d'un tableur.
+
+a. DESCRIPTION LENGTH ANALYSIS:
+
+   Cette section présente les éléments du calcul de la longueur de description
+   de la morphologie. Voir Xanthos (2007) pour plus de détails sur la façon
+   d'interpréter ces valeurs.
+
+b. WORDS:
+
+   Cette section donne la liste des mots distincts du corpus, avec leur nombre
+   d'occurrences, l'index de leur structure RS (voir f. ci-dessous) et leur
+   longueur de description (en bits).
+
+c. CONSONANTS AND VOWELS:
+
+   Cette section présente les catégories 'C' et 'V' identifiées par 
+   l'algorithme de Sukhotin.
+
+d. ROOTS:
+
+   Cette section dresse la liste des racines découvertes par le programme,
+   y compris les mots inanalysés (qui sont traités comme des racines qui se
+   combinent avec un schème zéro). On rapporte ici le nombre d'occurrences de
+   chaque racine, sa structure RS associée, sa longueur de description et, si
+   ce n'est pas un mot inanalysé, le code désignant l'heuristique ayant 
+   découvert cette racine: BS pour la 1è phase (amorçage) et EXT pour la 2è
+   phase (extension).
+
+e. PATTERNS:
+
+   Cette section donne la liste des schèmes avec leur nombre d'occurrences, 
+   la structure RS associée, et leur longueur de description.
+
+f. RP STRUCTURES:
+
+   Cette section énumère les structures RS découvertes. Pour chacune, on
+   donne:
+     - son indice numérique (tel qu'utilisé dans les sections b., d., et e.);
+     - son nombre d'occurrences;
+     - sa robustesse, c'est-à-dire le nombre de symboles économisés en 
+       écrivant cette structure plutôt que les mots qu'elle génère, voir
+       Xanthos (2007);
+     - la longueur de description totale des racines qu'elle contient (la 
+       valeur donnée entre parenthèses est le coût associé à la liste des
+       racines elle-même, indépendamment des racines spécifiques qu'elle
+       contient).
+     - la longueur de description totale des schèmes qu'elle contient;
+     - l'ensemble des racines qu'elle contient, avec leur nombre d'occurrences
+       et leur longueur de description;
+     - l'ensemble des schèmes qu'elle contient, avec leur nombre d'occurrences
+       et leur longueur de description.
+
+NB: Les indications figurant dans l'en-tête des sections b., d., e. et f.
+concerne chaque liste (mots, racines, schèmes et structures RS) traitée comme
+un tout. Ces indications donnent le nombre de types et de tokens dans la liste
+en question et sa longueur de description totale.
+
+
+
+5. Paramètres
+-------------
+
+Le fichier Config_Arabica.txt contient les paramètres qui contrôlent Arabica.
+Le format de chaque ligne est:
+
+             NomDuParametre = ValeurDuParametre
+
+à l'exception des lignes de commentaires, qui commencent par le symbole '#'
+et sont ignorées par le programme.
+
+Les paramètres sont:
+
+a. InputFileName: 
+
+   Le nom du fichier d'entrée, y compris son extension, p.ex. 'corpus.txt'.
+
+b. OutputFileName: 
+
+   Le nom du fichier de sortie (y.c. l'extension), p.ex. 'analysis.txt'. Si
+   ce paramètre est omis, le résultat est affiché directement à l'écran.
+
+c. SamplingRate: 
+
+   La proportion de mots qu'on souhaite échantillonner aléatoirement. La 
+   valeur par défaut (1) signifie que tous les mots doivent être sélectionnés,
+   tandis qu'une valeur de 0.5, par exemple, signifie qu'on souhaite 
+   échantillonner environ 50% des mots.
+
+d. InsertionSlotSymbol: 
+
+   Le symbole utilisé pour dénoter les points d'insertion dans les schèmes 
+   (le symbole par défaut est le tiret '-'). Le symbole sélectionné ne doit
+   pas apparaître dans le fichier d'entrée. 
+
+e. PhonemeCategoryInPatterns:
+
+   La catégorie de phonèmes utilisée pour construire les schèmes, soit 
+   'vowels' (par défaut) ou 'consonant' (l'algorithme de Sukhotin identifie
+   la catégorie contenant le symbole le plus fréquent comme celle des 
+   voyelles).
+
+f. MinimumNumberOfPhonemesPerRoot and 
+   MinimumNumberOfPhonemesPerPattern:
+
+   Le nombre de phonèmes en deçà duquel une racine ou un schème est 
+   automatiquement rejeté. La valeur par défaut est 2 pour les racines et 
+   1 pour les schèmes.
+
+g. MinimumNumberOfRoots and
+   MinimumNumberOfPatterns:
+
+   Le nombre de racines et de schèmes requis pour créer une structure RS. Les
+   valeurs par défaut sont 2 et 2.
+
+h. ExtendKnownRPStructures:
+
+   Un code indiquant s'il faut exécuter ('true') ou non ('false') la deuxième
+   phase d'apprentissage, où Arabica tente d'élargir la couverture de la
+   morphologie initiale. La valeur par défaut est 'true'.
+
+
+
+6. Contact
+----------
+
+Merci d'adresser vos questions et rapports d'erreurs à aris.xanthos@unil.ch. 
+Arabica.pl est un logiciel libre distribué sous la GNU general public license
+(voir fichier License.txt). La distribution complète ainsi que d'autres
+informations sur le programme peuvent être trouvées sur ces deux pages:
+http://www.unil.ch/imm ou http://linguistica.uchicago.edu.
+
+
+
+III. References
+===============
+
+
+Goldsmith, John A. (2001). Unsupervised learning of the morphology of a natural
+   language. Computational Linguistics, 27(2), 153–198.
+
+Rissanen, Jorma. (1989). Stochastic Complexity in Statistical Inquiry. 
+   Singapore: World Scientific Publishing Co.
+
+Sukhotin, Boris V. (1962). Eksperimental'noe vydelenie klassov bukv s
+   pomoscju EVM. Problemy strukturnoj lingvistiki, 234, 189–206.
+
+Sukhotin, Boris V. (1973). Méthode de déchiffrage, outil de recherche en
+   linguistique. T.A. Informations, 2, 1–43.
+
+Xanthos, Aris (2007). Apprentissage automatique de la morphologie: le cas des 
+   structures racine-schème, thèse de doctorat non publiée, Université de 
+   Lausanne.
